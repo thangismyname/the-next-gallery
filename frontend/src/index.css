@@ -1,0 +1,277 @@
+/* ============================================
+   IMPORTS
+   ============================================ */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/playfair-display"; /* dùng cho heading */
+
+/* @custom-variant dark (&:is(.dark *));
+  Removed/disabled because some tools report "Unknown at rule @custom-variant".
+  If you rely on a Tailwind plugin that supports @custom-variant, re-enable it
+  or configure the tooling to recognize the directive. */
+
+/* ============================================
+   LIGHT MODE — nền trắng ngà nhẹ, chữ đen
+   ============================================ */
+:root {
+  color-scheme: light dark;
+  --radius: 0.625rem;
+
+  /* Surface */
+  --background: oklch(0.99 0.006 85); /* trắng hơi vàng, vẫn thiên trắng */
+  --foreground: oklch(0.145 0.004 49.3); /* gần đen */
+  --card: oklch(0.99 0.006 85);
+  --card-foreground: oklch(0.145 0.004 49.3);
+  --popover: oklch(0.99 0.006 85);
+  --popover-foreground: oklch(0.145 0.004 49.3);
+
+  /* Primary / Secondary */
+  --primary: oklch(0.214 0.009 43.1);
+  --primary-foreground: oklch(0.986 0.002 67.8);
+  --secondary: oklch(0.96 0.002 17.2);
+  --secondary-foreground: oklch(0.214 0.009 43.1);
+
+  /* Muted / Accent */
+  --muted: oklch(0.96 0.002 17.2);
+  --muted-foreground: oklch(0.547 0.021 43.1);
+  --accent: oklch(0.96 0.002 17.2);
+  --accent-foreground: oklch(0.214 0.009 43.1);
+
+  /* Utility */
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0.005 34.3);
+  --input: oklch(0.922 0.005 34.3);
+  --ring: oklch(0.714 0.014 41.2);
+
+  /* Charts */
+  --chart-1: oklch(0.868 0.007 39.5);
+  --chart-2: oklch(0.547 0.021 43.1);
+  --chart-3: oklch(0.438 0.017 39.3);
+  --chart-4: oklch(0.367 0.016 35.7);
+  --chart-5: oklch(0.268 0.011 36.5);
+
+  /* Sidebar */
+  --sidebar: oklch(0.986 0.002 67.8);
+  --sidebar-foreground: oklch(0.147 0.004 49.3);
+  --sidebar-primary: oklch(0.214 0.009 43.1);
+  --sidebar-primary-foreground: oklch(0.986 0.002 67.8);
+  --sidebar-accent: oklch(0.96 0.002 17.2);
+  --sidebar-accent-foreground: oklch(0.214 0.009 43.1);
+  --sidebar-border: oklch(0.922 0.005 34.3);
+  --sidebar-ring: oklch(0.714 0.014 41.2);
+}
+
+/* ============================================
+   DARK MODE — nền đen tuyền, chữ trắng
+   ============================================ */
+.dark {
+  --background: oklch(0.08 0 0); /* gần đen tuyền */
+  --foreground: oklch(0.985 0 0); /* trắng, không ám vàng */
+  --card: oklch(0.13 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.13 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.922 0.005 34.3);
+  --primary-foreground: oklch(0.214 0.009 43.1);
+  --secondary: oklch(0.268 0.011 36.5);
+  --secondary-foreground: oklch(0.986 0.002 67.8);
+
+  --muted: oklch(0.268 0.011 36.5);
+  --muted-foreground: oklch(0.714 0.014 41.2);
+  --accent: oklch(0.268 0.011 36.5);
+  --accent-foreground: oklch(0.986 0.002 67.8);
+
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.547 0.021 43.1);
+
+  --chart-1: oklch(0.868 0.007 39.5);
+  --chart-2: oklch(0.547 0.021 43.1);
+  --chart-3: oklch(0.438 0.017 39.3);
+  --chart-4: oklch(0.367 0.016 35.7);
+  --chart-5: oklch(0.268 0.011 36.5);
+
+  --sidebar: oklch(0.11 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.986 0.002 67.8);
+  --sidebar-accent: oklch(0.268 0.011 36.5);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.547 0.021 43.1);
+}
+
+/* ============================================
+   FONT: PRODUCT SANS — font chính (body/UI)
+   ============================================ */
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/Product Sans Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/Product Sans Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/Product Sans Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Product Sans";
+  src: url("./assets/fonts/Product Sans Bold Italic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ============================================
+   TAILWIND TOKEN MAPPING (v4)
+   ============================================ */
+@theme inline {
+  --font-sans: "Product Sans", system-ui, sans-serif;
+  --font-heading: "Playfair Display Variable", serif;
+  /* Map font-serif về cùng Playfair để mọi "serif" thống nhất với font-heading */
+  --font-serif: "Playfair Display Variable", serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    letter-spacing: 0.18px;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* View Transition — theme toggle
+   Cả 2 chiều: vòng tròn màu mới (new) toả ra từ nút.
+   - new nằm TRÊN old (z-index cao hơn) vì là lớp phủ lên nền cũ.
+   - Phần trong vòng tròn clip-path = màu nền mới; phần ngoài lộ nền cũ (old),
+     nên khi vòng tròn phóng to ta thấy màu mới "toả ra" lan dần. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* ============================================
+   REACTION BUBBLE — 3D FLIP (emoji ↔ avatar)
+   ============================================
+   - .reaction-flip-3d   : container có perspective (chiều sâu 3D)
+   - .reaction-flip-card : mặt phải preserve-3d, tự xoay rotateY theo keyframes
+   - .reaction-face      : mỗi mặt backface-visibility hidden (mặt sau lật thì ẩn)
+   - .reaction-face-back : mặt sau xoay sẵn 180deg
+   - Dùng animation-delay ÂM để các bubble lệch pha nhau (stagger trong mọi vòng lặp)
+   ============================================ */
+/* Thời lượng 1 vòng lật = 5s:
+   - 0–55%  : giữ mặt emoji         (chờ ~2.75s)
+   - 55–65% : lật SANG avatar        (nhanh ~0.5s → gần như cùng lúc)
+   - 65–95% : giữ mặt avatar         (chờ hơi lâu ~1.5s để xem list ai)
+   - 95–100%: lật VỀ emoji           (nhanh ~0.25s)  */
+@keyframes reaction-flip {
+  0%,
+  55% {
+    transform: rotateY(0deg);
+  }
+  65%,
+  95% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.reaction-flip-3d {
+  perspective: 400px;
+}
+
+.reaction-flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: reaction-flip 5s var(--flip-delay, 0s) infinite;
+}
+
+.reaction-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.reaction-face-back {
+  transform: rotateY(180deg);
+}

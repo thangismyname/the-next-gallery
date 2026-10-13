@@ -1,0 +1,29 @@
+# ==========================================================
+# Caddyfile — Production Reverse Proxy cho The Next Gallery
+# ==========================================================
+
+{
+    # Tắt auto-https khi test local / HTTP; bật khi cấu hình domain production
+    # auto_https off
+}
+
+:80 {
+    encode zstd gzip
+
+    # Định tuyến AI service requests sang ai-service FastAPI
+    handle /api/ai/* {
+        # AI service routes ở /api/v1/* — bỏ /api/ai → /api khi proxy
+        uri replace /api/ai /api
+        reverse_proxy ai-service:8000
+    }
+
+    # Định tuyến API requests sang Backend Express
+    handle /api/* {
+        reverse_proxy backend:3000
+    }
+
+    # Định tuyến toàn bộ static & SPA routes sang Frontend Nginx
+    handle {
+        reverse_proxy frontend:80
+    }
+}

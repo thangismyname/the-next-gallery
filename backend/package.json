@@ -1,0 +1,37 @@
+{
+  "name": "ai-gallery-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.js",
+    "start": "node src/server.js",
+    "backfill:embed": "node src/scripts/backfill-embeddings.js",
+    "backfill:detect": "node src/scripts/backfill-detections.js"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "helmet": "^7.1.0",
+    "minio": "^8.0.7",
+    "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.5",
+    "pg": "^8.23.0",
+    "sharp": "^0.35.3",
+    "ws": "^8.21.3",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.2.0",
+    "@types/nodemailer": "^8.0.1",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}

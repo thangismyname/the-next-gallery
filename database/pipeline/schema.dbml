@@ -1,0 +1,224 @@
+// ==========================================================
+// schema.dbml — The Next Gallery — Phase 1
+// Paste toàn bộ file này vào https://dbdiagram.io để tự vẽ ERD.
+// Đây chỉ là bản mô tả quan hệ để vẽ sơ đồ, KHÔNG dùng để chạy
+// migrate — 4 bảng Better Auth quản lý qua CLI riêng của nó,
+// không tạo/sửa cấu trúc bằng tay.
+// ==========================================================
+
+// ==========================================================
+// BETTER AUTH — quản lý bởi Better Auth CLI, đưa vào đây để
+// vẽ đủ quan hệ FK, không tự ý ALTER các bảng này.
+// Có role/banned/banReason/banExpires trên "user" vì bạn đang
+// bật Admin plugin của Better Auth.
+// ==========================================================
+Table user {
+  id text [pk]
+  name text [not null]
+  email text [not null, unique]
+  emailVerified boolean [not null]
+  image text
+  createdAt timestamptz [not null]
+  updatedAt timestamptz [not null]
+  role text [note: 'Admin plugin — vd "admin" | "user"']
+  banned boolean [note: 'Admin plugin']
+  banReason text [note: 'Admin plugin']
+  banExpires timestamptz [note: 'Admin plugin']
+
+  Note: 'Quản lý bởi Better Auth CLI. Mọi bảng app dùng user_id (text) đều trỏ FK vào đây.'
+}
+
+Table session {
+  id text [pk]
+  expiresAt timestamptz [not null]
+  token text [not null, unique]
+  createdAt timestamptz [not null]
+  updatedAt timestamptz [not null]
+  ipAddress text
+  userAgent text
+  userId text [not null, ref: > user.id]
+  impersonatedBy text [note: 'Admin plugin — admin đang giả lập user này']
+}
+
+Table account {
+  id text [pk]
+  accountId text [not null]
+  providerId text [not null, note: 'vd "credential", "google"...']
+  userId text [not null, ref: > user.id]
+  accessToken text
+  refreshToken text
+  idToken text
+  accessTokenExpiresAt timestamptz
+  refreshTokenExpiresAt timestamptz
+  scope text
+  password text [note: 'Hash password nếu dùng email/password provider']
+  createdAt timestamptz [not null]
+  updatedAt timestamptz [not null]
+  issuer text
+}
+
+Table verification {
+  id text [pk]
+  identifier text [not null]
+  value text [not null]
+  expiresAt timestamptz [not null]
+  createdAt timestamptz [not null]
+  updatedAt timestamptz [not null]
+}
+
+// ==========================================================
+// APP — Phase 1: Media / Album / Moments
+// ==========================================================
+
+Table media {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id text [not null, ref: > user.id, note: 'Chủ sở hữu file']
+  media_type media_type_enum [not null, default: 'photo']
+  original_filename varchar(255)
+  caption text
+  taken_at timestamptz
+  width int
+  height int
+  duration_seconds decimal(10,3) [note: 'Chỉ có giá trị với video']
+  fps real
+  video_codec varchar(50)
+  thumbnail_object text
+  minio_object text [not null]
+  minio_bucket varchar(100) [default: 'gallery']
+  file_ext varchar(20)
+  mime_type varchar(100)
+  file_size_kb int
+  decor_data jsonb [note: 'Filter/sticker lúc chụp']
+  extra_data jsonb [note: 'Dự phòng cho phase AI sau']
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'Nguồn sự thật duy nhất cho 1 file đã upload — mọi bảng khác chỉ trỏ media_id vào đây'
+}
+
+Table albums {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id text [not null, ref: > user.id, note: 'Owner gốc']
+  name varchar(255) [not null]
+  description text
+  cover_media_id uuid [ref: > media.id]
+  is_shared boolean [default: false]
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table album_media {
+  id uuid [pk, default: `gen_random_uuid()`]
+  album_id uuid [not null, ref: > albums.id]
+  media_id uuid [not null, ref: > media.id]
+  position int
+  added_at timestamptz
+
+  Note: 'Bảng nối n-n: 1 album nhiều media, 1 media nằm được trong nhiều album'
+
+  indexes {
+    (album_id, media_id) [unique]
+  }
+}
+
+Table album_members {
+  id uuid [pk, default: `gen_random_uuid()`]
+  album_id uuid [not null, ref: > albums.id]
+  user_id text [not null, ref: > user.id]
+  role varchar(20) [default: 'viewer', note: 'owner | editor | viewer']
+  invited_at timestamptz
+  accepted_at timestamptz [note: 'NULL = lời mời đang chờ']
+
+  Note: 'Bảng nối n-n: album cộng tác, ai ngoài owner được quyền truy cập'
+
+  indexes {
+    (album_id, user_id) [unique]
+  }
+}
+
+Table share_links {
+  id uuid [pk, default: `gen_random_uuid()`]
+  token varchar(64) [not null, unique]
+  created_by_user_id text [not null, ref: > user.id]
+  album_id uuid [ref: > albums.id, note: 'Chia sẻ cả album']
+  media_id uuid [ref: > media.id, note: 'Hoặc chia sẻ 1 file lẻ']
+  permission varchar(20) [default: 'view', note: 'view | download | edit']
+  expires_at timestamptz
+  max_views int
+  view_count int [default: 0]
+  created_at timestamptz
+
+  Note: 'Link chia sẻ công khai, người nhận không cần tài khoản'
+}
+
+Table friendships {
+  id uuid [pk, default: `gen_random_uuid()`]
+  requester_id text [not null, ref: > user.id]
+  addressee_id text [not null, ref: > user.id]
+  status varchar(20) [default: 'pending', note: 'pending | accepted | blocked']
+  created_at timestamptz
+  responded_at timestamptz
+
+  Note: 'Self-referencing n-n trên bảng user — vòng bạn bè cho Moments'
+
+  indexes {
+    (requester_id, addressee_id) [unique]
+  }
+}
+
+Table moments {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id text [not null, ref: > user.id, note: 'Người đăng']
+  media_id uuid [not null, ref: > media.id, note: 'Ảnh/video vừa chụp']
+  caption text
+  visibility varchar(20) [default: 'circle', note: 'circle | public | private']
+  expires_at timestamptz [note: 'NULL = không tự biến mất']
+  created_at timestamptz
+}
+
+Table moment_reactions {
+  id uuid [pk, default: `gen_random_uuid()`]
+  moment_id uuid [not null, ref: > moments.id]
+  user_id text [not null, ref: > user.id, note: 'Người react']
+  reaction_emoji varchar(10) [not null]
+  created_at timestamptz
+
+  Note: 'Bảng nối n-n giữa moments và user — 1 người chỉ react 1 lần/moment'
+
+  indexes {
+    (moment_id, user_id) [unique]
+  }
+}
+
+Table moment_memes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  moment_id uuid [not null, ref: > moments.id]
+  user_id text [not null, ref: > user.id, note: 'Người đăng meme']
+  image_url text [not null, note: 'URL ảnh meme render từ memegen.link']
+  template_id varchar(64) [note: 'ID template nguồn meme']
+  caption text [note: 'Ghi chú thêm (tùy chọn)']
+  created_at timestamptz
+
+  Note: 'Meme thả lên 1 moment — mặt sau thẻ khi lật, dạng bình luận ảnh với avatar người đăng'
+
+  indexes {
+    (moment_id, created_at) [desc]
+  }
+}
+
+Table meme_reactions {
+  meme_id uuid [not null, ref: > moment_memes.id, note: 'Meme được tim']
+  user_id text [not null, ref: > user.id, note: 'User tim meme']
+  created_at timestamptz
+
+  Note: 'Tim (❤️) của user trên 1 meme — PK đôi (meme_id, user_id) chống trùng, bấm lần nữa = bỏ tim. Số lượng hiển thị phía đối diện avatar'
+
+  indexes {
+    (meme_id)
+  }
+}
+
+Enum media_type_enum {
+  photo
+  video
+}

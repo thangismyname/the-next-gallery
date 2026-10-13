@@ -1,0 +1,1 @@
+"""The Next Gallery — AI Service App package."""

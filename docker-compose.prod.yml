@@ -1,0 +1,195 @@
+version: "3.9"
+# ==========================================================
+# PRODUCTION COMPOSE — The Next Gallery
+# - Chỉ reverse-proxy expose port ra ngoài (80/443)
+# - backend/frontend/postgres/minio nằm hoàn toàn trong network internal
+# - Chuẩn bị sẵn cho mobile app: FE web và Flutter app đều gọi
+#   qua cùng 1 domain HTTPS (vd: https://api.yourgallery.com)
+# ==========================================================
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: gallery_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/pipeline:/docker-entrypoint-initdb.d
+    networks:
+      - internal
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+
+  minio:
+    image: minio/minio:latest
+    container_name: gallery_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    networks:
+      - internal
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: gallery_backend
+    restart: always
+    # KHÔNG expose port ra host — chỉ reverse-proxy nói chuyện được với backend
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_POOL_SIZE: 10
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_SECURE: "false"
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${PUBLIC_API_BASE_URL_ROOT}
+      # CORS_ORIGINS nên gồm cả domain FE web lẫn scheme app mobile nếu cần (vd: capacitor://localhost)
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      TRUSTED_ORIGINS: ${CORS_ORIGINS}
+      AI_SERVICE_URL: http://ai-service:8000
+    networks:
+      - internal
+    logging: *default-logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_API_BASE_URL}
+    container_name: gallery_frontend
+    restart: always
+    expose:
+      - "80"
+    networks:
+      - internal
+    logging: *default-logging
+    depends_on:
+      backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile.prod
+      args:
+        CLIP_MODEL: ${AI_CLIP_MODEL:-ViT-B-32}
+        CLIP_PRETRAINED: ${AI_CLIP_PRETRAINED:-laion2b_s34b_b79k}
+    container_name: gallery_ai_service
+    restart: always
+    expose:
+      - "8000"
+    environment:
+      AI_HOST: 0.0.0.0
+      AI_PORT: 8000
+      AI_GESTURE_PROVIDER: ${AI_GESTURE_PROVIDER:-stub}
+      AI_FACE_PROVIDER: ${AI_FACE_PROVIDER:-stub}
+      AI_MODEL_DIR: models
+      AI_EMBED_PROVIDER: ${AI_EMBED_PROVIDER:-stub}
+      AI_CLIP_MODEL: ${AI_CLIP_MODEL:-ViT-B-32}
+      AI_CLIP_PRETRAINED: ${AI_CLIP_PRETRAINED:-laion2b_s34b_b79k}
+      AI_OBJECT_PROVIDER: ${AI_OBJECT_PROVIDER:-stub}
+      AI_YOLO_WEIGHTS: ${AI_YOLO_WEIGHTS:-/opt/yolo-cache/yolo26n.pt}
+      AI_YOLO_CONF: ${AI_YOLO_CONF:-0.25}
+    networks:
+      - internal
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  reverse-proxy:
+    image: caddy:2-alpine
+    container_name: gallery_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    logging: *default-logging
+    depends_on:
+      - backend
+      - frontend
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
+  caddy_data:
+  caddy_config:

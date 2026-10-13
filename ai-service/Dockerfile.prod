@@ -1,0 +1,49 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    NODE_ENV=production
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+# torch/torchvision: CPU wheel để image nhẹ (không kéo CUDA).
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+    torch torchvision
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Chạy bằng user không phải root - tốt hơn cho production
+RUN addgroup --system aigroup && adduser --system --ingroup aigroup aiuser
+
+# OpenCLIP weights (semantic search) — tải sẵn lúc build để runtime không cần
+# internet. HOME cố định để runtime (aiuser) tìm thấy cache đã bake.
+ARG CLIP_MODEL=ViT-B-32
+ARG CLIP_PRETRAINED=laion2b_s34b_b79k
+ENV HOME=/opt/clip-cache
+COPY scripts/download_clip_weight.py scripts/download_yolo_weight.py scripts/
+RUN python scripts/download_clip_weight.py \
+        --model "$CLIP_MODEL" \
+        --pretrained "$CLIP_PRETRAINED" \
+        --dir /opt/clip-cache \
+    && mkdir -p /opt/clip-cache \
+    && chown -R aiuser:aigroup /opt/clip-cache
+
+# YOLO26 weights (object detection) — bake sẵn, runtime không cần internet.
+ARG YOLO_MODEL=yolo26n.pt
+RUN python scripts/download_yolo_weight.py \
+        --model "$YOLO_MODEL" \
+        --dir /opt/yolo-cache \
+    && chmod -R 755 /opt/yolo-cache
+
+COPY --chown=aiuser:aigroup . .
+
+USER aiuser
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

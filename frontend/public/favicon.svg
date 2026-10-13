@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="The Next Gallery">
+  <rect width="64" height="64" rx="14" fill="#2A2523"/>
+  <defs>
+    <clipPath id="frame">
+      <rect x="12" y="15" width="40" height="34" rx="4"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <circle cx="24" cy="26" r="5" fill="#E7B87F"/>
+    <path d="M12 49 L25 33 L34 42 L41 35 L52 46 L52 49 Z" fill="#F7F4EF"/>
+  </g>
+  <rect x="12" y="15" width="40" height="34" rx="4" fill="none" stroke="#F7F4EF" stroke-width="3"/>
+</svg>
