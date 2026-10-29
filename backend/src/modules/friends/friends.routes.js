@@ -1,32 +1,17 @@
 import { Router } from "express";
-import { z } from "zod";
-import { requireAuth } from "../middleware/auth.js";
-import { validate } from "../middleware/validate.js";
-import * as friendsService from "../services/friends.service.js";
+import { requireAuth } from "../../middleware/auth.js";
+import { validate } from "../../middleware/validate.js";
+import { searchLimit } from "../../middleware/rateLimit.js";
+import * as friendsService from "./friends.service.js";
+import {
+  addFriendSchema,
+  searchUserQuerySchema,
+  requestParamsSchema,
+  deleteFriendSchema,
+  claimInviteSchema,
+} from "./friends.schema.js";
 
 const router = Router();
-
-// ---- Schemas ----
-
-const addFriendSchema = z.object({
-  query: z.string().min(1).max(320),
-});
-
-const searchQuerySchema = z.object({
-  query: z.string().min(1).max(320),
-});
-
-const requestParamsSchema = z.object({
-  requestId: z.string().uuid("ID không hợp lệ"),
-});
-
-const deleteFriendSchema = z.object({
-  friendId: z.string().uuid("ID không hợp lệ"),
-});
-
-const claimInviteSchema = z.object({
-  token: z.string().min(1, "Thiếu token"),
-});
 
 // ---- Routes ----
 
@@ -85,10 +70,11 @@ router.post("/invite/claim", requireAuth, validate(claimInviteSchema), async (re
 router.get(
   "/search",
   requireAuth,
-  validate(searchQuerySchema, "query"),
+  searchLimit, // chặn dò email hàng loạt
+  validate(searchUserQuerySchema, "query"),
   async (req, res, next) => {
     try {
-      const data = await friendsService.searchUser(req.user.id, req.query.query);
+      const data = await friendsService.searchUser(req.user.id, req.query.q);
       res.json({ success: true, data });
     } catch (error) {
       next(error);

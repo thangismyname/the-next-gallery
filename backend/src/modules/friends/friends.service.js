@@ -3,12 +3,15 @@
 // ==========================================================
 
 import crypto from "crypto";
-import { dbPool } from "../config/db.js";
+import { dbPool } from "../../config/db.js";
 
-const SECRET = process.env.BETTER_AUTH_SECRET || "friends-secret-fallback";
+// Dùng chung secret với Better Auth (lib/auth.js đã bắt buộc biến này tồn tại).
+const SECRET = process.env.BETTER_AUTH_SECRET;
 
 // Thời gian hiệu lực của link mời kết bạn (7 ngày)
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;// ---- Token helpers (HMAC-signed invite link, stateless) ----
+const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+// ---- Token helpers (HMAC-signed invite link, stateless) ----
 
 function sign(payload) {
   return crypto

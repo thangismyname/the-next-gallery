@@ -1,4 +1,4 @@
-import { dbPool } from "../config/db.js";
+import { dbPool } from "../../config/db.js";
 
 const VALID_STATUSES = new Set(["pending", "approved", "rejected"]);
 
@@ -20,15 +20,6 @@ export async function getDeveloperStatus(userId) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
-}
-
-export async function isApprovedDeveloper(userId) {
-  const result = await dbPool.query(
-    `SELECT 1 FROM developer_requests
-      WHERE user_id = $1 AND status = 'approved'`,
-    [userId]
-  );
-  return result.rowCount > 0;
 }
 
 export async function requestDeveloper(userId, message = null) {
@@ -98,6 +89,7 @@ export async function reviewDeveloperRequest(id, adminId, approve) {
   if (result.rowCount === 0) {
     const err = new Error("Developer request not found");
     err.status = 404;
+    err.code = "NOT_FOUND";
     throw err;
   }
   return result.rows[0];
