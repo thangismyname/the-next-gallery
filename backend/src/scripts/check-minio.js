@@ -1,4 +1,4 @@
-// Chạy: node src/scripts/test-minio.js  (từ thư mục backend/)
+// Chạy: node src/scripts/check-minio.js  (từ thư mục backend/)
 import "../config/env.js"; // load .env trước tiên
 import { minioClient } from "../config/minio.js";
 
