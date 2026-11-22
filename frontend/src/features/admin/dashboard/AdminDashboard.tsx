@@ -16,11 +16,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchAdminOverview, fetchAdminSystem } from "@/services/admin";
 import { formatBytes, adminQueryKeys } from "@tng/shared";
-import { AdminActivityChart } from "./components/AdminActivityChart";
-import { AdminAiStatusCard } from "./components/AdminAiStatusCard";
-import { AdminPageHeader } from "./components/AdminPageHeader";
-import { AdminStatGrid } from "./components/AdminStatGrid";
-import { UserCell } from "./components/UserCell";
+import { AdminActivityChart } from "./AdminActivityChart";
+import { AdminAiStatusCard } from "./AdminAiStatusCard";
+import { AdminPageHeader } from "@/features/admin/shared/AdminPageHeader";
+import { AdminStatGrid } from "./AdminStatGrid";
+import { UserCell } from "@/features/admin/shared/UserCell";
 import { formatRelative } from "@tng/shared";
 
 /** /admin — số liệu nhanh, hoạt động 30 ngày, hệ thống AI, người dùng mới. */

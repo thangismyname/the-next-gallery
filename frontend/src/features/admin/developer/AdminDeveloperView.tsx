@@ -20,9 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAdminDeveloperRequests } from "@/features/admin/useAdminDeveloperRequests";
-import { AdminPageHeader } from "./components/AdminPageHeader";
-import { UserCell } from "./components/UserCell";
+import { useAdminDeveloperRequests } from "./useAdminDeveloperRequests";
+import { AdminPageHeader } from "@/features/admin/shared/AdminPageHeader";
+import { UserCell } from "@/features/admin/shared/UserCell";
 import { formatRelative, type AdminDeveloperRequest, type DeveloperStatus } from "@tng/shared";
 
 const FILTERS = ["pending", "approved", "rejected", "all"] as const;

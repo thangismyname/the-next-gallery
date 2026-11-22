@@ -29,8 +29,8 @@ import { formatBytes, adminQueryKeys, parseUserAgent, userKind } from "@tng/shar
 import { BannedBadge, KindBadge } from "@/components/KindBadge";
 import { formatDate, formatRelative } from "@tng/shared";
 import { AdminUserActions } from "./AdminUserActions";
-import { AiCoverageBars } from "./AiCoverageBars";
-import { UserCell } from "./UserCell";
+import { AiCoverageBars } from "@/features/admin/shared/AiCoverageBars";
+import { UserCell } from "@/features/admin/shared/UserCell";
 
 const SECTION =
   "font-mono text-[10px] tracking-widest text-muted-foreground uppercase";

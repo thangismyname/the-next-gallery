@@ -22,7 +22,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { SearchTrigger } from "@/features/search/components/SearchTrigger";
-import { useAdminDeveloperRequests } from "@/features/admin/useAdminDeveloperRequests";
+import { useAdminDeveloperRequests } from "@/features/admin/developer/useAdminDeveloperRequests";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
 import { fetchAdminUsers } from "@/services/admin";

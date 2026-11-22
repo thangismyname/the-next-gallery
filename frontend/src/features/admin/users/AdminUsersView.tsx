@@ -37,10 +37,10 @@ import { type AdminUser, type AdminUserQuery, type AdminUserSort, adminQueryKeys
 import { formatBytes, userKind } from "@tng/shared";
 import { BannedBadge, KindBadge } from "@/components/KindBadge";
 import { KIND_STYLE } from "@/lib/userKind";
-import { AdminPageHeader } from "./components/AdminPageHeader";
-import { AdminUserActions } from "./components/AdminUserActions";
-import { AdminUserSheet } from "./components/AdminUserSheet";
-import { UserCell } from "./components/UserCell";
+import { AdminPageHeader } from "@/features/admin/shared/AdminPageHeader";
+import { AdminUserActions } from "./AdminUserActions";
+import { AdminUserSheet } from "./AdminUserSheet";
+import { UserCell } from "@/features/admin/shared/UserCell";
 import { formatDate, formatRelative } from "@tng/shared";
 
 const PAGE_SIZE = 20;
@@ -177,6 +177,7 @@ export function AdminUsersView() {
           <SelectContent>
             <SelectItem value={ALL}>{t("admin.users.allRoles")}</SelectItem>
             <SelectItem value="user">{t("admin.role.user")}</SelectItem>
+            <SelectItem value="developer">{t("admin.role.developer")}</SelectItem>
             <SelectItem value="admin">{t("admin.role.admin")}</SelectItem>
           </SelectContent>
         </Select>

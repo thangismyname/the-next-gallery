@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { AdminSystem } from "@tng/shared";
-import { AiCoverageBars } from "./AiCoverageBars";
+import { AiCoverageBars } from "@/features/admin/shared/AiCoverageBars";
 
 /** ai-service online? + model / provider đang chạy + tiến độ AI toàn hệ thống. */
 export function AdminAiStatusCard({ system }: { system?: AdminSystem }) {
